@@ -23,7 +23,12 @@ Content-Type: application/json
     }
 }
 ```
-
+_Response_
+```
+{
+    "hash": "6e4724f5-952a-43d5-8e34-c85973ae7cee"
+}
+```
 
 ### Call Mock URL
 ```
