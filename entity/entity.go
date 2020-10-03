@@ -26,6 +26,7 @@ type Handlers interface {
 	Init(w http.ResponseWriter, r *http.Request)
 	HandleCreate(w http.ResponseWriter, r *http.Request) (*HTTPResponse, error)
 	HandleRequest(w http.ResponseWriter, r *http.Request) (*HTTPResponse, error)
+	HandleHistory(w http.ResponseWriter, r *http.Request) (*HTTPResponse, error)
 }
 
 // HTTPRequest ...

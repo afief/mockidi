@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/afief/mockidi/entity"
 )
@@ -27,9 +28,12 @@ func (h *handlers) Init(w http.ResponseWriter, r *http.Request) {
 	var resp *entity.HTTPResponse
 	var err error
 
-	switch path := r.URL.Path; path {
-	case "/create":
+	paths := strings.Split(r.URL.Path, "/")
+	switch path := paths[1]; path {
+	case "create":
 		resp, err = h.HandleCreate(w, r)
+	case "history":
+		resp, err = h.HandleHistory(w, r)
 	default:
 		resp, err = h.HandleRequest(w, r)
 	}

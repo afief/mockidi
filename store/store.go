@@ -66,6 +66,10 @@ func (s *store) PushRequest(ctx context.Context, hash string, data *entity.HTTPR
 }
 
 func (s *store) GetRequests(ctx context.Context, hash string, start int64, stop int64) ([]*entity.HTTPRequest, error) {
+	_start := start
+	start = 0 - start - stop
+	stop = 0 - _start - 1
+
 	result := s.client.LRange(ctx, hashKey(hash, "reqs"), start, stop)
 	if result.Err() != nil {
 		return nil, result.Err()
