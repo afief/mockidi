@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/afief/mockidi/handler"
@@ -14,5 +15,8 @@ func main() {
 	handler := handler.NewHandlers(ctx, store)
 
 	http.HandleFunc("/", handler.Init)
-	http.ListenAndServe(":3000", nil)
+	fmt.Println("Listening :3000")
+	if err := http.ListenAndServe(":3000", nil); err != nil {
+		panic(err.Error())
+	}
 }

@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
+	"time"
 
 	"github.com/afief/mockidi/entity"
 	"github.com/go-redis/redis/v8"
@@ -30,15 +32,16 @@ func (s *store) Save(ctx context.Context, hash string, data *entity.PathInfo) er
 		return err
 	}
 
-	if err := s.client.HSet(ctx, fmt.Sprintf("mockidi:%s", hash), "default", encoded).Err(); err != nil {
-		return nil
+	ttl := time.Hour * 144 // 6 months
+	if err := s.client.Set(ctx, hashKey(hash), encoded, ttl).Err(); err != nil {
+		return err
 	}
 
 	return nil
 }
 
 func (s *store) Get(ctx context.Context, hash string) *entity.PathInfo {
-	encoded, err := s.client.HGet(ctx, fmt.Sprintf("mockidi:%s", hash), "default").Bytes()
+	encoded, err := s.client.Get(ctx, hashKey(hash)).Bytes()
 	if err != nil {
 		return nil
 	}
@@ -47,4 +50,37 @@ func (s *store) Get(ctx context.Context, hash string) *entity.PathInfo {
 		return nil
 	}
 	return &decoded
+}
+
+func (s *store) PushRequest(ctx context.Context, hash string, data *entity.HTTPRequest) error {
+	encoded, err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
+
+	if err := s.client.RPush(ctx, hashKey(hash, "reqs"), encoded).Err(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *store) GetRequests(ctx context.Context, hash string, start int64, stop int64) ([]*entity.HTTPRequest, error) {
+	result := s.client.LRange(ctx, hashKey(hash, "reqs"), start, stop)
+	if result.Err() != nil {
+		return nil, result.Err()
+	}
+
+	var decodeds []*entity.HTTPRequest
+	for _, encoded := range result.Val() {
+		var decoded entity.HTTPRequest
+		if err := json.Unmarshal([]byte(encoded), &decoded); err == nil {
+			decodeds = append(decodeds, &decoded)
+		}
+	}
+	return decodeds, nil
+}
+
+func hashKey(hash ...string) string {
+	return fmt.Sprintf("mockidi:%s", strings.Join(hash, ":"))
 }
