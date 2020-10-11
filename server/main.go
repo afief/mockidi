@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 
@@ -10,11 +9,9 @@ import (
 )
 
 func main() {
-	ctx := context.Background()
 	store := store.NewStore()
-	handler := handler.NewHandlers(ctx, store)
 
-	http.HandleFunc("/", handler.Init)
+	http.HandleFunc("/", handler.NewHandlers(store))
 	fmt.Println("Listening :3000")
 	if err := http.ListenAndServe(":3000", nil); err != nil {
 		panic(err.Error())

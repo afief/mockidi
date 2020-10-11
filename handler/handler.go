@@ -2,7 +2,6 @@ package handler
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"strings"
@@ -10,21 +9,28 @@ import (
 	"github.com/afief/mockidi/entity"
 )
 
+type ctxVal string
+
 type handlers struct {
 	ctx   context.Context
 	store entity.Store
 }
 
 // NewHandlers returns Handlers interface
-func NewHandlers(ctx context.Context, store entity.Store) entity.Handlers {
-	return &handlers{
-		ctx:   ctx,
+func NewHandlers(store entity.Store) func(w http.ResponseWriter, r *http.Request) {
+	h := &handlers{
 		store: store,
+	}
+
+	return func(w http.ResponseWriter, r *http.Request) {
+
 	}
 }
 
 // Initial ...
 func (h *handlers) Init(w http.ResponseWriter, r *http.Request) {
+	fmt.Println(h.ctx)
+	h.ctx = context.Background()
 	var resp *entity.HTTPResponse
 	var err error
 
@@ -37,26 +43,4 @@ func (h *handlers) Init(w http.ResponseWriter, r *http.Request) {
 	default:
 		resp, err = h.HandleRequest(w, r)
 	}
-
-	if err != nil {
-		resp = &entity.HTTPResponse{
-			Status: 400,
-			Body: map[string]string{
-				"errorMessage": err.Error(),
-			},
-		}
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	for k, v := range resp.Headers {
-		w.Header().Set(k, v)
-	}
-	w.WriteHeader(resp.Status)
-
-	if strBody, ok := resp.Body.(string); ok {
-		fmt.Fprint(w, strBody)
-		return
-	}
-
-	json.NewEncoder(w).Encode(resp.Body)
 }

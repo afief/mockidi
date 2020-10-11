@@ -21,12 +21,14 @@ type Store interface {
 	GetRequests(ctx context.Context, hash string, start int64, stop int64) ([]*HTTPRequest, error)
 }
 
+// Handler define single handler function
+type Handler func(http.ResponseWriter, *http.Request) (context.Context, error)
+
 // Handlers contains all handlers
 type Handlers interface {
-	Init(w http.ResponseWriter, r *http.Request)
-	HandleCreate(w http.ResponseWriter, r *http.Request) (*HTTPResponse, error)
-	HandleRequest(w http.ResponseWriter, r *http.Request) (*HTTPResponse, error)
-	HandleHistory(w http.ResponseWriter, r *http.Request) (*HTTPResponse, error)
+	HandleCreate(http.ResponseWriter, *http.Request) (context.Context, error)
+	HandleRequest(http.ResponseWriter, *http.Request) (context.Context, error)
+	HandleHistory(http.ResponseWriter, *http.Request) (context.Context, error)
 }
 
 // HTTPRequest ...
